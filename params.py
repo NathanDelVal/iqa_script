@@ -1,7 +1,5 @@
 ### REs ###
-file_pattern = r"\(([abcABC])\)"
-############
-iqa_month = 8
+file_pattern = r"\(([abcABC])\)" #não mexam 
 ####################
 bloco_a = "BRK"
 bloco_b = "ADS"

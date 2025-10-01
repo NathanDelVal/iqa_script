@@ -20,9 +20,9 @@ args = parser.parse_args()
 sheet_reference = {"Plan_Conc":"05-PLN_AMT_VRF", "Dados_Conc":"08-RST_ANL_VRF"}
 sheet_reference_name = [x for x in sheet_reference.values()]
 conc_dict = {
- 1: 'set', 2: 'out', 3: 'nov', 4: 'dez',
- 5: 'jan', 6: 'fev', 7: 'mar', 8: 'abr',
- 9: 'mai', 10: 'jun', 11: 'jul', 12: 'ago'
+ '1': 'set', '2': 'out', '3': 'nov', '4': 'dez',
+ '5': 'jan', '6': 'fev', '7': 'mar', '8': 'abr',
+ '9': 'mai', '10': 'jun', '11': 'jul', '12': 'ago'
 }
 
 blocos = {"a": params.bloco_a, "b": params.bloco_b, "c": params.bloco_c}
@@ -82,7 +82,7 @@ for x in range(1, 13):
     year = dateparser.parse("last year").__format__("%y")
     if x > 4:
         year = datetime.now().__format__("%y")
-    mes.append(f"{conc_dict[x]}/{year}")
+    mes.append(f"{conc_dict[str(x)]}/{year}")
 
 mes *= 3
 
