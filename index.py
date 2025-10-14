@@ -40,7 +40,7 @@ if args.input_files:
                 final_col = []
                 prepend = {
                     "Relatório": [f"{args.referencia}{''.join(re.findall(params.file_pattern, x)).upper()}"] * len(df[sheet]),
-                    "Mês Ref": [f"{conc_dict[args.referencia]}/{datetime.now().__format__('%y')}"] * len(df[sheet]),
+                    "Mês Ref": [f"{conc_dict[str(args.referencia)]}/{datetime.now().__format__('%y')}"] * len(df[sheet]),
                     "Bloco": ["".join(re.findall(params.file_pattern, x)).upper()] * len(df[sheet]),
                     "Empresa": [blocos["".join(re.findall(params.file_pattern, x)).lower()]] * len(df[sheet])
                 }
