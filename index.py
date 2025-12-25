@@ -1,6 +1,7 @@
 import pandas as pd
 import sys
 import re
+import math
 import params
 from datetime import datetime
 import dateparser
@@ -9,10 +10,11 @@ from unidecode import unidecode
 
 target_month = 8
 
+# print(dateparser.parse("1st September 2024"))
 # --- argparse setup ---
 parser = argparse.ArgumentParser(description="Process IQA Excel files.")
 parser.add_argument('input_files', nargs='+', help='Input Excel files')
-parser.add_argument('--referencia', default=int(datetime.now().__format__('%m')), help='Coloque o mês referente')
+parser.add_argument('--relatorio', help='Coloque o número do relatório')
 parser.add_argument('--output', default=f"IQA_{datetime.now().__format__('%m-%Y')}.xlsx", help='Output Excel file name')
 parser.add_argument('--log', default="log.txt", help='Log file name')
 args = parser.parse_args()
@@ -20,10 +22,23 @@ args = parser.parse_args()
 sheet_reference = {"Plan_Conc":"05-PLN_AMT_VRF", "Dados_Conc":"08-RST_ANL_VRF"}
 sheet_reference_name = [x for x in sheet_reference.values()]
 conc_dict = {
- '1': 'set', '2': 'out', '3': 'nov', '4': 'dez',
- '5': 'jan', '6': 'fev', '7': 'mar', '8': 'abr',
- '9': 'mai', '10': 'jun', '11': 'jul', '12': 'ago'
+    "0": "jan",
+    "1": "fev",
+    "2": "mar",
+    "3": "abr",
+    "4": "mai",
+    '5': "jun",
+    '6': "jul",
+    '7': "ago",
+    '8': "set",
+    '9': "out",
+    '10': "nov",
+    '11': "dez",
 }
+
+base_year = 2024
+
+current_year = base_year + math.floor((int(args.relatorio) + 8) / 12)
 
 blocos = {"a": params.bloco_a, "b": params.bloco_b, "c": params.bloco_c}
 
@@ -38,9 +53,13 @@ if args.input_files:
             df = pd.read_excel(x, sheet_name=sheet_reference_name)
             for sheet in sheet_reference_name:
                 final_col = []
+                # compute zero-based month index and report year suffix
+                month_index = str((8 + (int(args.relatorio) - 1)) % 12)
+                month_key = str(month_index)
+                year_suffix = f"{current_year % 100:02d}"
                 prepend = {
-                    "Relatório": [f"{args.referencia}{''.join(re.findall(params.file_pattern, x)).upper()}"] * len(df[sheet]),
-                    "Mês Ref": [f"{conc_dict[str(args.referencia)]}/{datetime.now().__format__('%y')}"] * len(df[sheet]),
+                    "Relatório": [f"{args.relatorio}{''.join(re.findall(params.file_pattern, x)).upper()}"] * len(df[sheet]),
+                    "Mês Ref": [f"{conc_dict[month_key]}/{year_suffix}"] * len(df[sheet]),
                     "Bloco": ["".join(re.findall(params.file_pattern, x)).upper()] * len(df[sheet]),
                     "Empresa": [blocos["".join(re.findall(params.file_pattern, x)).lower()]] * len(df[sheet])
                 }
@@ -72,17 +91,19 @@ for k, v in iqa_sheets.items():
         sheet = sheet[result]
     iqa_sheets[k] = pd.concat(v)
 
-relatorio = [f"{x}A" for x in range(1,13)] + [f"{x}B" for x in range(1,13)] + [f"{x}C" for x in range(1,13)]
+ano_concesao = math.floor((int(args.relatorio) - 1) / 12)
+
+relatorio = [f"{x + 12 * ano_concesao}A" for x in range(1,13)] + [f"{x + 12 * ano_concesao}B" for x in range(1,13)] + [f"{x + 12 * ano_concesao}C" for x in range(1,13)]
 empresa = [params.bloco_a] * 12 + [params.bloco_b] * 12 + [params.bloco_c] * 12
 bloco = ["A"] * 12 + ["B"] * 12 + ["C"] * 12
 
 mes = []
 
-for x in range(1, 13):
-    year = dateparser.parse("last year").__format__("%y")
-    if x > 4:
-        year = datetime.now().__format__("%y")
-    mes.append(f"{conc_dict[str(x)]}/{year}")
+for x in range(12):
+    year = base_year + ano_concesao
+    if x > 3:
+        year += 1
+    mes.append(f"{conc_dict[str((x + 8) % 12)]}/{year}")
 
 mes *= 3
 
